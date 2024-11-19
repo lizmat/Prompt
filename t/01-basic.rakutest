@@ -1,6 +1,12 @@
 use Test;
 use Prompt;
 
-pass "replace me";
+plan 2;
 
-done-testing;
+nok MY::<&prompt>:exists, "'prompt' not exported by default";
+{
+    use Prompt :prompt;
+    ok MY::<&prompt>:exists, "'prompt' exported specifically";
+}
+
+# vim: expandtab shiftwidth=4

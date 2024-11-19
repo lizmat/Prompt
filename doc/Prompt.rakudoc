@@ -24,6 +24,9 @@ $prompt.save-history;
 The Prompt module offers a better C<prompt> experience, drawing
 on the logic of the Raku REPL.
 
+It also optionally provides a replacement for Raku's standard
+L<C<prompt>|https://docs.raku.org/routine/prompt> functionality.
+
 =head1 ROLES
 
 The C<Prompt> role is what usually gets punned into a class.
@@ -231,6 +234,43 @@ module.
 The role that implements the user interface using the
 L<C<Linenoise>|https://raku.land/zef:raku-community-modules/Linenoise>
 module.
+
+=head1 SUBROUTINES
+
+=head2 sub prompt
+
+=begin code :lang<raku>
+
+use Prompt :prompt;
+
+say prompt("> ");
+
+=end code
+
+If the C<:prompt> named argument is specified with the C<use Prompt>
+statement, a lexical replacement for the standard C<prompt> functionality
+will be exported.
+
+=head3 $*PROMPT
+
+The C<$*PROMPT> dynamic variable will be used to obtain the C<Prompt>
+object to be used in the interaction.  If none was found, a new
+C<Prompt> object will be created and stored as C<$*PROMPT> in the
+C<PROCESS::> stash (making it automatically available for any
+subsequent call to the exported C<prompt> subroutine.
+
+=begin code :lang<raku>
+
+use Prompt :prompt;
+
+my $*PROMPT = Prompt.new(...);
+say prompt("> ");
+
+=end code
+
+If one needs specific initializations with the C<Prompt> object, one
+can also define ones own C<$*PROMPT> dynamic variable before calling
+C<prompt>.
 
 =head1 AUTHOR
 

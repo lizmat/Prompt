@@ -24,6 +24,8 @@ DESCRIPTION
 
 The Prompt module offers a better `prompt` experience, drawing on the logic of the Raku REPL.
 
+It also optionally provides a replacement for Raku's standard [`prompt`](https://docs.raku.org/routine/prompt) functionality.
+
 ROLES
 =====
 
@@ -177,6 +179,33 @@ Prompt::Linenoise
 -----------------
 
 The role that implements the user interface using the [`Linenoise`](https://raku.land/zef:raku-community-modules/Linenoise) module.
+
+SUBROUTINES
+===========
+
+sub prompt
+----------
+
+```raku
+use Prompt :prompt;
+
+say prompt("> ");
+```
+
+If the `:prompt` named argument is specified with the `use Prompt` statement, a lexical replacement for the standard `prompt` functionality will be exported.
+
+### $*PROMPT
+
+The `$*PROMPT` dynamic variable will be used to obtain the `Prompt` object to be used in the interaction. If none was found, a new `Prompt` object will be created and stored as `$*PROMPT` in the `PROCESS::` stash (making it automatically available for any subsequent call to the exported `prompt` subroutine.
+
+```raku
+use Prompt :prompt;
+
+my $*PROMPT = Prompt.new(...);
+say prompt("> ");
+```
+
+If one needs specific initializations with the `Prompt` object, one can also define ones own `$*PROMPT` dynamic variable before calling `prompt`.
 
 AUTHOR
 ======

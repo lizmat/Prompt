@@ -8,7 +8,7 @@ role Prompt { ... }
 role Prompt::Fallback {
     has $.history;
 
-    method read($prompt) { CORE::prompt($prompt) }
+    method read($prompt) { &CORE::prompt($prompt) }
     multi method history() { $!history }
     multi method history($history) {
         $!history := $history.IO;
@@ -189,6 +189,17 @@ role Prompt {
             Nil
         }
     }
+}
+
+#- prompt ----------------------------------------------------------------------
+my sub prompt($prompt = "") is export(:prompt) {
+    without $*PROMPT {
+        (nqp::istype($_,Failure)
+          ?? PROCESS::<$PROMPT>  # no lexical dynamic found, stash it in PROCESS
+          !! $*PROMPT            # uninitialized lexical dynamic found
+        ) = Prompt.new;
+    }
+    val $*PROMPT.readline($prompt);
 }
 
 # vim: expandtab shiftwidth=4
