@@ -1,0 +1,28 @@
+{
+  "auth": "zef:lizmat",
+  "authors": [
+    "Elizabeth Mattijsen"
+  ],
+  "build-depends": [
+  ],
+  "depends": [
+  ],
+  "description": "A smarter prompt for user interaction",
+  "license": "Artistic-2.0",
+  "name": "Prompt",
+  "perl": "6.d",
+  "provides": {
+    "Prompt": "lib/Prompt.rakumod"
+  },
+  "resources": [
+  ],
+  "source-url": "https://github.com/lizmat/Prompt.git",
+  "tags": [
+    "PROMPT",
+    "INTERACTIVE",
+    "READLINE"
+  ],
+  "test-depends": [
+  ],
+  "version": "0.0.1"
+}
