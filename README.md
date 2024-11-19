@@ -196,7 +196,7 @@ If the `:prompt` named argument is specified with the `use Prompt` statement, a 
 
 ### $*PROMPT
 
-The `$*PROMPT` dynamic variable will be used to obtain the `Prompt` object to be used in the interaction. If none was found, a new `Prompt` object will be created and stored as `$*PROMPT` in the `PROCESS::` stash (making it automatically available for any subsequent call to the exported `prompt` subroutine.
+The `$*PROMPT` dynamic variable will be used to obtain the `Prompt` object to be used in the interaction. If none was found, a new `Prompt` object will be created and stored as `$*PROMPT` in the `PROCESS::` stash (making it automatically available for any subsequent call to the exported `prompt` subroutine).
 
 ```raku
 use Prompt :prompt;

@@ -257,7 +257,7 @@ The C<$*PROMPT> dynamic variable will be used to obtain the C<Prompt>
 object to be used in the interaction.  If none was found, a new
 C<Prompt> object will be created and stored as C<$*PROMPT> in the
 C<PROCESS::> stash (making it automatically available for any
-subsequent call to the exported C<prompt> subroutine.
+subsequent call to the exported C<prompt> subroutine).
 
 =begin code :lang<raku>
 
