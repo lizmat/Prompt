@@ -7,6 +7,7 @@ role Prompt { ... }
 #- Prompt::Fallback ------------------------------------------------------------
 role Prompt::Fallback {
     has $.history;
+    has $.editor-name = "Fallback";
 
     method read($prompt) { &CORE::prompt($prompt) }
     multi method history() { $!history }
@@ -23,6 +24,8 @@ role Prompt::Fallback {
 #- Prompt::Readline ------------------------------------------------------------
 role Prompt::Readline does Prompt::Fallback {
     has $!Readline is built;
+
+    method editor-name(--> "Readline") { }
 
     method new() {
         with try "use Readline; Readline.new".EVAL {
@@ -58,6 +61,8 @@ role Prompt::Linenoise does Prompt::Fallback {
     has &!linenoiseHistoryAdd  is built;
     has &!linenoiseHistoryLoad is built;
     has &!linenoiseHistorySave is built;
+
+    method editor-name(--> "Linenoise") { }
 
     method new() {
         with try "use Linenoise; Linenoise.WHO".EVAL -> %WHO {
@@ -96,6 +101,8 @@ role Prompt::Linenoise does Prompt::Fallback {
 role Prompt::LineEditor does Prompt::Fallback {
     has $!LineEditor is built;
 
+    method editor-name(--> "LineEditor") { }
+
     method new() {
         with try Q:to/CODE/.EVAL {
 use Terminal::LineEditor;
@@ -133,7 +140,7 @@ role Prompt {
 
     # The editor logic being used
     has Mu $.editor handles <
-      add-history history load-history read save-history
+      add-history editor-name history load-history read save-history
     >;
 
     # The last line seen
@@ -149,10 +156,16 @@ role Prompt {
             note "Failed to load support for '$editor'" without $!editor;
         }
 
-        # When running a REPL inside of emacs, the fallback behaviour
-        # should be used, as that is provided by emacs itself
+        # When running a REPL inside emacs the fallback behaviour
+        # should be used, setting the editor name explicitely
         if %*ENV<INSIDE_EMACS> {
-            $!editor = Prompt::Fallback.new(|%nameds);
+            $!editor = Prompt::Fallback.new(:editor-name<emacs>, |%nameds);
+        }
+
+        # When running a REPL inside an "rlwrap" the fallback behaviour
+        # should be used, setting the editor name explicitely
+        elsif (%*ENV<_> // "").ends-with: 'rlwrap' {
+            $!editor = Prompt::Fallback.new(:editor-name<rlwrap>, |%nameds);
         }
 
         # A specific editor support has been requested

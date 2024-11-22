@@ -129,6 +129,17 @@ The C<read> method takes a single positional argument for the prompt
 to be shown and returns a line of input from the user.  It does B<not>
 handle anything history related.
 
+=head3 method editor-name
+
+=begin code :lang<raku>
+
+say $prompt.editor-name;
+
+=end code
+
+The C<editor-name> method returns the name of the editor support that was
+activated.  It is intended to be purely informatonal.
+
 =head3 method history
 
 =begin code :lang<raku>

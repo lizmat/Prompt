@@ -96,6 +96,14 @@ my $line = $prompt.read("> ");
 
 The `read` method takes a single positional argument for the prompt to be shown and returns a line of input from the user. It does **not** handle anything history related.
 
+### method editor-name
+
+```raku
+say $prompt.editor-name;
+```
+
+The `editor-name` method returns the name of the editor support that was activated. It is intended to be purely informatonal.
+
 ### method history
 
 ```raku
