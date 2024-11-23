@@ -2,6 +2,9 @@ Revision history for Prompt
 
 {{$NEXT}}
     - Added support for .supports-completions method
+    - Added support for .completions setter / getter
+    - Initial stab at supporting completions for the
+      Linenoise and Terminal::LineEditor editors
 
 0.0.3  2024-11-22T17:59:06+01:00
     - Added support for .editor-name method

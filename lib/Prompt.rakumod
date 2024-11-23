@@ -8,8 +8,51 @@ role Prompt { ... }
 role Prompt::Fallback {
     has $.history;
     has $.editor-name = "Fallback";
+    has @.completions;
 
+    # Basic input reader
     method read($prompt) { &CORE::prompt($prompt) }
+
+    # Do not support completions by default
+    method supports-completions(--> False) { }
+
+    # Fetching / Setting completions
+    proto method completions(|) {*}
+    multi method completions() { @!completions }
+    multi method completions(@completions) {
+        @!completions := @completions.sort.List
+    }
+
+    # Find appropriate line completions
+    method line-completions(
+      str $line, int $pos = $line.chars
+    ) is implementation-detail {
+        if @!completions && $line {
+            my str $prefix  = $line.substr(0,$pos).trim-trailing;
+            my str $postfix = $line.substr($prefix.chars);
+
+            my str $lastword;
+            with $prefix.rindex(" ") -> $index is copy {
+                ++$index;
+                $lastword = $prefix.substr($index);
+                $prefix   = $prefix.substr(0,$index);
+            }
+            else {
+                $lastword = $prefix;
+                $prefix   = "";
+            }
+
+            @!completions.map({
+                $prefix ~ $_ ~ $postfix if .starts-with($lastword)
+            }).List
+        }
+        else {
+            @!completions
+        }
+    }
+
+    # Fetching / Setting / Updating history
+    proto method history(|) {*}
     multi method history() { $!history }
     multi method history($history) {
         $!history := $history.IO;
@@ -19,7 +62,6 @@ role Prompt::Fallback {
     method load-history() { }
     method add-history($) { }
     method save-history() { }
-    method supports-completions(--> False) { }
 }
 
 #- Prompt::Readline ------------------------------------------------------------
@@ -30,7 +72,7 @@ role Prompt::Readline does Prompt::Fallback {
 
     method new() {
         with try "use Readline; Readline.new".EVAL {
-            my $self := self.bless(:Readline($_));
+            my $self := self.bless(:Readline($_), |%_);
             $self.history($_) with %_<history>;
             $self
         }
@@ -39,102 +81,106 @@ role Prompt::Readline does Prompt::Fallback {
         }
     }
 
-    method read($prompt) {
-        $!Readline.readline($prompt)
-    }
-
-    method add-history($code --> Nil) {
-        $!Readline.add-history($code);
-    }
-
-    method load-history() {
+    method read($prompt) { $!Readline.readline($prompt) }
+    method add-history($code --> Nil) { $!Readline.add-history($code)}
+    method load-history(--> Nil) {
         $!Readline.read-history(.absolute) with $.history;
     }
-
-    method save-history() {
+    method save-history(--> Nil) {
         $!Readline.write-history(.absolute) with $.history;
     }
 }
 
 #- Prompt::Linenoise -----------------------------------------------------------
 role Prompt::Linenoise does Prompt::Fallback {
-    has &!linenoise            is built;
-    has &!linenoiseHistoryAdd  is built;
-    has &!linenoiseHistoryLoad is built;
-    has &!linenoiseHistorySave is built;
+    has &!linenoise   is built;
+    has &!HistoryAdd  is built;
+    has &!HistoryLoad is built;
+    has &!HistorySave is built;
 
     method editor-name(--> "Linenoise") { }
 
     method new() {
+
+        # haz Linenoise
         with try "use Linenoise; Linenoise.WHO".EVAL -> %WHO {
             my $self := self.bless(
-              linenoise            => %WHO<&linenoise>,
-              linenoiseHistoryAdd  => %WHO<&linenoiseHistoryAdd>,
-              linenoiseHistoryLoad => %WHO<&linenoiseHistoryLoad>,
-              linenoiseHistorySave => %WHO<&linenoiseHistorySave>,
+              linenoise             => %WHO<&linenoise>,
+              HistoryAdd            => %WHO<&linenoiseHistoryAdd>,
+              HistoryLoad           => %WHO<&linenoiseHistoryLoad>,
+              HistorySave           => %WHO<&linenoiseHistorySave>,
+              |%_
             );
             $self.history($_) with %_<history>;
+
+            my &AddCompletion := %WHO<&linenoiseAddCompletion>;
+            %WHO<&linenoiseSetCompletionCallback>( -> $line, $c {
+                $self.line-completions($line).map({
+                    AddCompletion($c, $_)
+                }).List
+            });
+
             $self
         }
+
+        # alas, no go
         else {
             Nil
         }
     }
 
-    method read($prompt) {
-        &!linenoise($prompt)
-    }
-
-    method add-history($code --> Nil) {
-        &!linenoiseHistoryAdd($code);
-    }
-
-    method load-history() {
-        &!linenoiseHistoryLoad(.absolute) with $.history;
-    }
-
-    method save-history() {
-        &!linenoiseHistorySave(.absolute) with $.history;
-    }
+    method read($prompt) { &!linenoise($prompt) }
+    method add-history($code --> Nil) { &!HistoryAdd($code) }
+    method load-history(--> Nil) { &!HistoryLoad(.absolute) with $.history }
+    method save-history(--> Nil) { &!HistorySave(.absolute) with $.history }
     method supports-completions(--> True) { }
 }
 
-#- Prompt::Terminal::LineEditor ------------------------------------------------
+#- Prompt::LineEditor ----------------------------------------------------------
 role Prompt::LineEditor does Prompt::Fallback {
     has $!LineEditor is built;
 
     method editor-name(--> "LineEditor") { }
 
     method new() {
-        with try Q:to/CODE/.EVAL {
+        my \CLIInput := try Q:to/CODE/.EVAL;
 use Terminal::LineEditor;
 use Terminal::LinePrompt::RawTerminalInput;
-Terminal::LinePrompt::CLIInput.new
+Terminal::LinePrompt::CLIInput
 CODE
-            my $self := self.bless(:LineEditor($_));
-            $self.history($_) with %_<history>;
-            $self
-        }
-        else {
+        # alas, no go
+        if $! {
             Nil
         }
+
+        # haz Terminal::LineEditor
+        else {
+
+            # Set up the input object with place-holder for completions
+            my &get-completions;
+            my $LineEditor := CLIInput.new(:&get-completions);
+
+            # Set up the editor object
+            my $self := self.bless(:$LineEditor, |%_);
+            $self.history($_) with %_<history>;
+
+            # Make sure we can actuall do completions
+            &get-completions = -> $line, $pos {
+                $self.line-completions($line, $pos)
+            }
+            $self
+        }
     }
 
-    method read($prompt) {
-        $!LineEditor.prompt($prompt.chop)
-    }
-
-    method add-history($code --> Nil) {
-        $!LineEditor.add-history($code);
-    }
-
-    method load-history() {
+    method read($prompt) { $!LineEditor.prompt($prompt.chop) }
+    method add-history($code --> Nil) { $!LineEditor.add-history($code) }
+    method load-history(--> Nil) {
         $!LineEditor.load-history($_) with $.history;
     }
-
-    method save-history() {
+    method save-history(--> Nil) {
         $!LineEditor.save-history($_) with $.history;
     }
+    method supports-completions(--> True) { }
 }
 
 #- Prompt ----------------------------------------------------------------------

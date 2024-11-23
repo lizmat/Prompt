@@ -74,6 +74,10 @@ Will load any persistent history already available if the specified path already
 
 Used value available with the `.history` method.
 
+#### :completions
+
+A `List` of sorted strings to be used for tab-completions by the editor. Will only be useful if the `.supports-completions` method returns `True`.
+
 ### method readline
 
 ```raku
@@ -95,6 +99,18 @@ my $line = $prompt.read("> ");
 ```
 
 The `read` method takes a single positional argument for the prompt to be shown and returns a line of input from the user. It does **not** handle anything history related.
+
+### method completions
+
+```raku
+.say for $prompt.completions;
+
+$prompt.completions(<a b c>);
+```
+
+The `completions` method returns the current sorted `List` of completions.
+
+If called with a `Positional`, will sort that and use that as the list of completions to use.
 
 ### method editor-name
 

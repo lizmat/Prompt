@@ -94,6 +94,11 @@ already existed.
 
 Used value available with the C<.history> method.
 
+=head4 :completions
+
+A C<List> of sorted strings to be used for tab-completions by the editor.
+Will only be useful if the C<.supports-completions> method returns C<True>.
+
 =head3 method readline
 
 =begin code :lang<raku>
@@ -128,6 +133,21 @@ my $line = $prompt.read("> ");
 The C<read> method takes a single positional argument for the prompt
 to be shown and returns a line of input from the user.  It does B<not>
 handle anything history related.
+
+=head3 method completions
+
+=begin code :lang<raku>
+
+.say for $prompt.completions;
+
+$prompt.completions(<a b c>);
+
+=end code
+
+The C<completions> method returns the current sorted C<List> of completions.
+
+If called with a C<Positional>, will sort that and use that as the list
+of completions to use.
 
 =head3 method editor-name
 
