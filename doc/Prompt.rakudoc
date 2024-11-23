@@ -224,6 +224,12 @@ Expected to take no arguments and save any persistent history information,
 as indicated by its C<history> method.  Does not perform any action by the
 default implementation in the C<Prompt::Fallback> role.
 
+=head2 supports-completions
+
+Expected to take no arguments and return a C<Bool> indicating whether
+this editor supports completions.  Defaults to C<False> in the
+C<Prompt::Fallback> role.
+
 =head2 Prompt::Fallback
 
 Apart from the definition of the interface for editors, it provides

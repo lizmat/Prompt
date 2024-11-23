@@ -19,6 +19,7 @@ role Prompt::Fallback {
     method load-history() { }
     method add-history($) { }
     method save-history() { }
+    method supports-completions(--> False) { }
 }
 
 #- Prompt::Readline ------------------------------------------------------------
@@ -95,6 +96,7 @@ role Prompt::Linenoise does Prompt::Fallback {
     method save-history() {
         &!linenoiseHistorySave(.absolute) with $.history;
     }
+    method supports-completions(--> True) { }
 }
 
 #- Prompt::Terminal::LineEditor ------------------------------------------------

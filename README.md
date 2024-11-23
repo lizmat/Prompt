@@ -168,6 +168,11 @@ save-history
 
 Expected to take no arguments and save any persistent history information, as indicated by its `history` method. Does not perform any action by the default implementation in the `Prompt::Fallback` role.
 
+supports-completions
+--------------------
+
+Expected to take no arguments and return a `Bool` indicating whether this editor supports completions. Defaults to `False` in the `Prompt::Fallback` role.
+
 Prompt::Fallback
 ----------------
 
