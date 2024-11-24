@@ -32,14 +32,15 @@ role Prompt::Fallback {
             my str $postfix = $line.substr($prefix.chars);
 
             my str $lastword;
-            with $prefix.rindex(" ") -> $index is copy {
+            my $index = quietly $prefix.rindex(" ") max $prefix.rindex(".");
+            if $index == -Inf {
+                $lastword = $prefix;
+                $prefix   = "";
+            }
+            else {
                 ++$index;
                 $lastword = $prefix.substr($index);
                 $prefix   = $prefix.substr(0,$index);
-            }
-            else {
-                $lastword = $prefix;
-                $prefix   = "";
             }
 
             @!completions.map({
@@ -115,9 +116,12 @@ role Prompt::Linenoise does Prompt::Fallback {
 
             my &AddCompletion := %WHO<&linenoiseAddCompletion>;
             %WHO<&linenoiseSetCompletionCallback>( -> $line, $c {
-                $self.line-completions($line).map({
+
+                # The callback doesn't sink, so we need to make the
+                # iterator do the work manually
+                my @ is List = $self.line-completions($line).map: {
                     AddCompletion($c, $_)
-                }).List
+                }
             });
 
             $self
@@ -143,32 +147,27 @@ role Prompt::LineEditor does Prompt::Fallback {
     method editor-name(--> "LineEditor") { }
 
     method new() {
-        my \CLIInput := try Q:to/CODE/.EVAL;
-use Terminal::LineEditor;
-use Terminal::LinePrompt::RawTerminalInput;
-Terminal::LinePrompt::CLIInput
-CODE
-        # alas, no go
-        if $! {
-            Nil
+        my $self;
+
+        # Sub needs to exist before input object is create
+        my sub get-completions($line, $pos) {
+            $self.line-completions($line, $pos)
         }
 
         # haz Terminal::LineEditor
-        else {
-
-            # Set up the input object with place-holder for completions
-            my &get-completions;
-            my $LineEditor := CLIInput.new(:&get-completions);
-
+        with try Q:to/CODE/.EVAL {
+use Terminal::LineEditor;
+use Terminal::LineEditor::RawTerminalInput;
+Terminal::LineEditor::CLIInput.new(:&get-completions)
+CODE
             # Set up the editor object
-            my $self := self.bless(:$LineEditor, |%_);
+            $self := self.bless(:LineEditor($_), |%_);
             $self.history($_) with %_<history>;
-
-            # Make sure we can actuall do completions
-            &get-completions = -> $line, $pos {
-                $self.line-completions($line, $pos)
-            }
             $self
+        }
+        # alas, no go
+        else {
+            Nil
         }
     }
 
@@ -188,7 +187,8 @@ role Prompt {
 
     # The editor logic being used
     has Mu $.editor handles <
-      add-history editor-name history load-history read save-history
+      add-history completions editor-name history load-history read
+      save-history supports-completions
     >;
 
     # The last line seen
