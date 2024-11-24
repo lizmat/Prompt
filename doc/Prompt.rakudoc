@@ -48,7 +48,9 @@ were entered.
 
 my $prompt = Prompt.new(
   :editor(Any),    # or "Readline", "LineEditor", "Linenoise"
-  :history<here>,  # default: none
+  :history<here>,                       # default: none
+  :completions(@completions),           # default: none
+  :additional-completions(&one, &two),  # default: none
 );
 loop {
     last without my $line = $prompt.readline;
@@ -96,8 +98,14 @@ Used value available with the C<.history> method.
 
 =head4 :completions
 
-A C<List> of sorted strings to be used for tab-completions by the editor.
-Will only be useful if the C<.supports-completions> method returns C<True>.
+A C<List> of strings to be used for tab-completions by the editor.  Will
+only be useful if the C<.supports-completions> method returns C<True>.
+
+=head4 :additional-completions
+
+A C<List> of C<Callables> to be called to support additional completion
+logic.  Will only be useful if the C<.supports-completions> method
+returns C<True>.
 
 =head3 method readline
 
@@ -148,6 +156,14 @@ The C<completions> method returns the current sorted C<List> of completions.
 
 If called with a C<Positional>, will sort that and use that as the list
 of completions to use.
+
+=head3 method additional-completions
+
+The C<additional-completions> method returns an C<Array> of C<Callable>s
+that will be called whenever a completion is requested.  Each C<Callable>
+is expected to accepted two positional arguments: the first is the line
+that has been entered so far by the user, and the second is the position
+of the cursor when a completion was requested.
 
 =head3 method editor-name
 

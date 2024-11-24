@@ -43,7 +43,9 @@ The `Prompt` role embodies the information needed to read a line of input from a
 ```raku
 my $prompt = Prompt.new(
   :editor(Any),    # or "Readline", "LineEditor", "Linenoise"
-  :history<here>,  # default: none
+  :history<here>,                       # default: none
+  :completions(@completions),           # default: none
+  :additional-completions(&one, &two),  # default: none
 );
 loop {
     last without my $line = $prompt.readline;
@@ -76,7 +78,11 @@ Used value available with the `.history` method.
 
 #### :completions
 
-A `List` of sorted strings to be used for tab-completions by the editor. Will only be useful if the `.supports-completions` method returns `True`.
+A `List` of strings to be used for tab-completions by the editor. Will only be useful if the `.supports-completions` method returns `True`.
+
+#### :additional-completions
+
+A `List` of `Callables` to be called to support additional completion logic. Will only be useful if the `.supports-completions` method returns `True`.
 
 ### method readline
 
@@ -111,6 +117,10 @@ $prompt.completions(<a b c>);
 The `completions` method returns the current sorted `List` of completions.
 
 If called with a `Positional`, will sort that and use that as the list of completions to use.
+
+### method additional-completions
+
+The `additional-completions` method returns an `Array` of `Callable`s that will be called whenever a completion is requested. Each `Callable` is expected to accepted two positional arguments: the first is the line that has been entered so far by the user, and the second is the position of the cursor when a completion was requested.
 
 ### method editor-name
 

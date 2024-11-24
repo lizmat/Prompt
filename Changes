@@ -2,6 +2,10 @@ Revision history for Prompt
 
 {{$NEXT}}
 
+0.0.5  2024-11-24T20:16:27+01:00
+    - Added support for additional completions with the
+      :additional-completions named argument and method
+
 0.0.4  2024-11-24T12:44:28+01:00
     - Added support for .supports-completions method
     - Added support for .completions setter / getter

@@ -9,6 +9,7 @@ role Prompt::Fallback {
     has $.history;
     has $.editor-name = "Fallback";
     has @.completions;
+    has @.additional-completions;
 
     # Basic input reader
     method read($prompt) { &CORE::prompt($prompt) }
@@ -19,7 +20,7 @@ role Prompt::Fallback {
     # Fetching / Setting completions
     proto method completions(|) {*}
     multi method completions() { @!completions }
-    multi method completions(@completions) {
+    multi method completions(*@completions) {
         @!completions := @completions.sort.List
     }
 
@@ -27,9 +28,11 @@ role Prompt::Fallback {
     method line-completions(
       str $line, int $pos = $line.chars
     ) is implementation-detail {
-        if @!completions && $line {
-            my str $prefix  = $line.substr(0,$pos).trim-trailing;
-            my str $postfix = $line.substr($prefix.chars);
+        my $completions := nqp::create(IterationBuffer);
+
+        if $line {
+            my str $prefix   = $line.substr(0,$pos).trim-trailing;
+            my str $postfix  = $line.substr($prefix.chars);
 
             my str $lastword;
             my $index = quietly $prefix.rindex(" ") max $prefix.rindex(".");
@@ -45,11 +48,14 @@ role Prompt::Fallback {
 
             @!completions.map({
                 $prefix ~ $_ ~ $postfix if .starts-with($lastword)
-            }).List
+            }).iterator.push-all($completions);
+
+            for @!additional-completions -> &completions {
+                completions($line, $pos).iterator.push-all($completions);
+            }
         }
-        else {
-            @!completions
-        }
+
+        $completions.List
     }
 
     # Fetching / Setting / Updating history
