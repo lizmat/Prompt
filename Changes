@@ -2,6 +2,10 @@ Revision history for Prompt
 
 {{$NEXT}}
 
+0.0.6  2024-11-25T20:34:11+01:00
+    - Make editor specification more resilient to faulty
+      input
+
 0.0.5  2024-11-24T20:16:27+01:00
     - Added support for additional completions with the
       :additional-completions named argument and method

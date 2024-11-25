@@ -193,8 +193,8 @@ role Prompt {
 
     # The editor logic being used
     has Mu $.editor handles <
-      add-history completions editor-name history load-history read
-      save-history supports-completions
+      additional-completions add-history completions editor-name history
+      load-history read save-history supports-completions
     >;
 
     # The last line seen
@@ -206,8 +206,13 @@ role Prompt {
 
         # Try the given editor
         sub try-editor($editor) {
-            $!editor = try Prompt::{$editor}.new(|%nameds);
-            note "Failed to load support for '$editor'" without $!editor;
+            if Prompt::{$editor}:exists {
+                $!editor = try Prompt::{$editor}.new(|%nameds);
+                note "Failed to load support for '$editor'" without $!editor;
+            }
+            else {
+                $!editor = Nil;
+            }
         }
 
         # When running a REPL inside emacs the fallback behaviour
@@ -230,6 +235,11 @@ role Prompt {
         # A string argument was specified
         elsif nqp::istype($!editor,Str) {
             try-editor($!editor);
+        }
+
+        # A Bool argument was specified
+        elsif nqp::istype($!editor,Bool) {
+            $!editor = Nil;
         }
 
         # Still no editor yet, try them in order, any non-standard ones
