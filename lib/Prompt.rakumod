@@ -180,7 +180,10 @@ CODE
     method read($prompt) { $!LineEditor.prompt($prompt.chop) }
     method add-history($code --> Nil) { $!LineEditor.add-history($code) }
     method load-history(--> Nil) {
-        $!LineEditor.load-history($_) with $.history;
+        with $.history {
+            .spurt unless .e;
+            $!LineEditor.load-history($_);
+        }
     }
     method save-history(--> Nil) {
         $!LineEditor.save-history($_) with $.history;

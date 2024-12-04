@@ -1,6 +1,10 @@
 Revision history for Prompt
 
 {{$NEXT}}
+    - Make sure history file exists for Terminal::LineEditor
+      because otherwise Terminal::LineEditor activation will
+      fail and another editor will be selected.  Spotted by
+      Timo Paulssen++
 
 0.0.6  2024-11-25T20:34:11+01:00
     - Make editor specification more resilient to faulty
