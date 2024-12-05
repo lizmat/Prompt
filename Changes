@@ -1,6 +1,8 @@
 Revision history for Prompt
 
 {{$NEXT}}
+
+0.0.7  2024-12-05T12:14:11+01:00
     - Make sure history file exists for Terminal::LineEditor
       because otherwise Terminal::LineEditor activation will
       fail and another editor will be selected.  Spotted by
