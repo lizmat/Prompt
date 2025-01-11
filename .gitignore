@@ -1,3 +1,4 @@
 .precomp/
 /Prompt-*
 /releases/
+*.rakucov
