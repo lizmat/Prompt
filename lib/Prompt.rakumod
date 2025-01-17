@@ -203,6 +203,110 @@ role Prompt {
     # The last line seen
     has Str $.last-line = "";
 
+    # Subset of ANSI color codes
+    my sub expand-color(Str:D $format --> Str:D) {
+        my constant %ansi = <
+          reset          0
+          normal         0
+          bold           1
+          dim            2
+          italic         3
+          underline      4
+          blink          5
+          inverse        7
+          hidden         8
+          strikethrough  9
+          black         30
+          red           31
+          green         32
+          yellow        33
+          blue          34
+          magenta       35
+          cyan          36
+          white         37
+          default       39
+          bg:black      40
+          bg:red        41
+          bg:green      42
+          bg:yellow     43
+          bg:blue       44
+          bg:magenta    45
+          bg:cyan       46
+          bg:white      47
+          bg:default    49
+        >;
+
+        $format.split(";").map( {
+            if %ansi{$_} -> $code {
+                "\x[1B][" ~ $code ~ 'm'
+            }
+            else {
+                '\c{' ~ $_ ~ '}'
+            }
+        }).join
+    }
+
+    # Subset of strftime formatting
+    my sub expand-time(Str:D $format --> Str:D) {
+        my str $hh-mm-ss = DateTime.now.hh-mm-ss;
+
+        $format.trans: <%T %R %H %M %S %I> => (
+          $hh-mm-ss,              # %T
+          $hh-mm-ss.substr(0,5),  # %R
+          $hh-mm-ss.substr(0,2),  # %H
+          $hh-mm-ss.substr(3,2),  # %M
+          $hh-mm-ss.substr(6,2),  # %S
+          {                       # %I
+              my $hour = $hh-mm-ss.substr(0,2);
+              if $hour gt "12" {
+                  $hour -= 12;
+                  $hour < 10 ?? "0$hour" !! "$hour"
+              }
+              else {
+                  $hour
+              }
+          }
+        )
+    }
+
+    my sub expand-prompt(Str:D $prompt --> Str:D) {
+
+        # Constants for readability and constantness
+        my constant bell    = chr(7);
+        my constant escape  = chr(27);
+        my constant newline = "\n";
+        my constant prefix  = escape ~ '[';
+        my constant reset   = prefix ~ "0m";
+
+        $prompt.trans: (
+          '\i',                        # index
+          '\a',                        # bell
+          '\n',                        # newline
+          '\e',                        # escape
+          '\c',                        # reset
+          '\t',                        # hh:mm:ss
+          '\v',                        # compiler version
+          '\V',                        # compiler version (verbose)
+          '\l',                        # language version
+          '\L',                        # language version (verbose)
+          rx/ '\c' '{' <-[}]>* '}' /,  # colors
+          rx/ '\t' '{' <-[}]>* '}' /,  # time
+        ) => (
+          $*INDEX // 0,
+          bell,
+          newline,
+          escape,
+          reset,
+          DateTime.now.hh-mm-ss,
+          $*RAKU.compiler.version.Str,
+          $*RAKU.compiler.version.gist,
+          $*RAKU.version.Str,
+          $*RAKU.version.gist,
+          { expand-color $/.substr(3, *-1) },
+          { expand-time  $/.substr(3, *-1) },
+        )
+    }
+
     method new(Mu $editor?) { self.bless(:$editor, |%_) }
 
     method TWEAK(*%nameds) {
@@ -256,8 +360,10 @@ role Prompt {
     }
 
     # Read a line with history saving logic
-    method readline($prompt = "> ") {
-        with self.read($prompt) -> $line {
+    method readline($prompt?){
+        with self.read(
+          $prompt ?? expand-prompt($prompt) !! '> '
+        ) -> $line {
             if $line && $line ne $!last-line {
                 self.add-history($line);
                 $!last-line = $line;
@@ -279,7 +385,13 @@ my sub prompt($prompt = "") is export(:prompt) {
           !! $*PROMPT            # uninitialized lexical dynamic found
         ) = Prompt.new;
     }
-    val $*PROMPT.readline($prompt);
+
+    with $*PROMPT.readline($prompt) {
+        val($_)
+    }
+    else {
+        Nil
+    }
 }
 
 # vim: expandtab shiftwidth=4
