@@ -254,8 +254,8 @@ role Prompt {
     }
 
     # Subset of strftime formatting
-    my sub expand-datetime(Str:D $format --> Str:D) {
-        my $now         := DateTime.now;
+    my sub expand-datetime(Str:D $format, DateTime:D $dt --> Str:D) {
+        my $now           := $dt // DateTime.new;
         my str $yyyy-mm-dd = $now.yyyy-mm-dd;
         my str $hh-mm-ss   = $now.hh-mm-ss;
 
@@ -302,7 +302,12 @@ role Prompt {
         )
     }
 
-    method expand(Prompt: Str:D $prompt --> Str:D) {
+    method expand(Prompt:
+      Str:D  $prompt,
+            :$now,
+      int   :$index,
+            :$symbol = '>',
+    --> Str:D) {
 
         # Constants for readability and constantness
         my constant bell    = chr(7);
@@ -324,10 +329,11 @@ role Prompt {
           '\V',                        # compiler version (verbose)
           '\l',                        # language version
           '\L',                        # language version (verbose)
+          '\P',                        # prompt symbol
           rx/ '\c' '{' <-[}]>* '}' /,  # colors
           rx/ '\d' '{' <-[}]>* '}' /,  # time
         ) => (
-          $*INDEX // 0,
+          $index,
           bell,
           tab,
           newline,
@@ -338,8 +344,9 @@ role Prompt {
           $*RAKU.compiler.version.gist,
           $*RAKU.version.Str,
           $*RAKU.version.gist,
-          { expand-color    $/.substr(3, *-1) },
-          { expand-datetime $/.substr(3, *-1) },
+          $symbol,
+          { expand-color    $/.substr(3, *-1)       },
+          { expand-datetime $/.substr(3, *-1), $now },
         )
     }
 

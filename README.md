@@ -166,18 +166,34 @@ Will save the current history to the file indicated with `history`.
 ### method expand
 
 ```raku
-my $prompt = Prompt.expand('\c{yellow;bold}\d{%r}\c > ');
+my $prompt = Prompt.expand('\c{yellow;bold}\d{%r}\c \P ');
 Prompt.new.readline($prompt);
 ```
 
 The `expand` method will scan the given string for a number of escape escape sequences and interpolate the values associated with the given escape sequence if found.
+
+#### :index
+
+The `index` named argument can be specified to indicate to what value the `\i` sequence should interpolate. It will assume `0` if not specified.
+
+#### :symbol
+
+The `symbol` named argument can be specified to indicate to what prompt symbol the `\P` sequence should interpolate. It will assume `">"` if not specified.
+
+#### :now
+
+The `now` named argument can be specified to indicate with what `DateTime` object the `\d` format sequences should interpolate with. It will assume `DateTime.now` if not specified.
+
+#### interpolation sequences
+
+The following interpolation sequences are recognized.
 
 <table class="pod-table">
 <thead><tr>
 <th>Sequence</th> <th>Prompt Expansion</th>
 </tr></thead>
 <tbody>
-<tr> <td>\a</td> <td>alert / bell character</td> </tr> <tr> <td>\t</td> <td>tab</td> </tr> <tr> <td>\n</td> <td>newline</td> </tr> <tr> <td>\c</td> <td>color / formatting - see below for options</td> </tr> <tr> <td>\d</td> <td>time - see below for options</td> </tr> <tr> <td>\e</td> <td>escape character</td> </tr> <tr> <td>\i</td> <td>the value of $*INDEX</td> </tr> <tr> <td>\l</td> <td>language version</td> </tr> <tr> <td>\L</td> <td>language version (verbose)</td> </tr> <tr> <td>\v</td> <td>compiler version</td> </tr> <tr> <td>\V</td> <td>compiler version (verbose)</td> </tr>
+<tr> <td>\a</td> <td>alert / bell character</td> </tr> <tr> <td>\t</td> <td>tab</td> </tr> <tr> <td>\n</td> <td>newline</td> </tr> <tr> <td>\c</td> <td>color / formatting - see below for options</td> </tr> <tr> <td>\d</td> <td>time - see below for options</td> </tr> <tr> <td>\e</td> <td>escape character</td> </tr> <tr> <td>\i</td> <td>the value of :$index, or 0</td> </tr> <tr> <td>\l</td> <td>language version</td> </tr> <tr> <td>\L</td> <td>language version (verbose)</td> </tr> <tr> <td>\v</td> <td>compiler version</td> </tr> <tr> <td>\V</td> <td>compiler version (verbose)</td> </tr> <tr> <td>\P</td> <td>the value of :$symbol, or &#39;&gt;&#39;</td> </tr>
 </tbody>
 </table>
 

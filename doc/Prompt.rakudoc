@@ -223,7 +223,7 @@ Will save the current history to the file indicated with C<history>.
 
 =begin code :lang<raku>
 
-my $prompt = Prompt.expand('\c{yellow;bold}\d{%r}\c > ');
+my $prompt = Prompt.expand('\c{yellow;bold}\d{%r}\c \P ');
 Prompt.new.readline($prompt);
 
 =end code
@@ -231,6 +231,28 @@ Prompt.new.readline($prompt);
 The C<expand> method will scan the given string for a number of escape
 escape sequences and interpolate the values associated with the given
 escape sequence if found.
+
+=head4 :index
+
+The C<index> named argument can be specified to indicate to what value
+the C<\i> sequence should interpolate.  It will assume C<0> if not
+specified.
+
+=head4 :symbol
+
+The C<symbol> named argument can be specified to indicate to what prompt
+symbol the C<\P> sequence should interpolate.  It will assume C«">"» if
+not specified.
+
+=head4 :now
+
+The C<now> named argument can be specified to indicate with what C<DateTime>
+object the C<\d> format sequences should interpolate with.  It will assume
+C<DateTime.now> if not specified.
+
+=head4 interpolation sequences
+
+The following interpolation sequences are recognized.
 
 =begin table
 
@@ -242,11 +264,12 @@ escape sequence if found.
 | \c       | color / formatting - see below for options
 | \d       | time - see below for options
 | \e       | escape character
-| \i       | the value of $*INDEX
+| \i       | the value of :$index, or 0
 | \l       | language version
 | \L       | language version (verbose)
 | \v       | compiler version
 | \V       | compiler version (verbose)
+| \P       | the value of :$symbol, or '>'
 
 =end table
 
