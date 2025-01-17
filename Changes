@@ -2,6 +2,11 @@ Revision history for Prompt
 
 {{$NEXT}}
 
+0.0.8  2025-01-17T19:31:09+01:00
+    - Add method "expand" which performs various types of
+      escape sequence expansions, intended to make the prompt
+      shown to the user much more configurable
+
 0.0.7  2024-12-05T12:14:11+01:00
     - Make sure history file exists for Terminal::LineEditor
       because otherwise Terminal::LineEditor activation will

@@ -246,64 +246,100 @@ role Prompt {
         }).join
     }
 
-    # Subset of strftime formatting
-    my sub expand-time(Str:D $format --> Str:D) {
-        my str $hh-mm-ss = DateTime.now.hh-mm-ss;
+    # Replace any "0" at start by blank
+    my sub blank(Str:D $it) {
+        $it.starts-with("0")
+          ?? " " ~ $it.substr(1)
+          !! $it
+    }
 
-        $format.trans: <%T %R %H %M %S %I> => (
-          $hh-mm-ss,              # %T
-          $hh-mm-ss.substr(0,5),  # %R
-          $hh-mm-ss.substr(0,2),  # %H
-          $hh-mm-ss.substr(3,2),  # %M
-          $hh-mm-ss.substr(6,2),  # %S
-          {                       # %I
-              my $hour = $hh-mm-ss.substr(0,2);
-              if $hour gt "12" {
-                  $hour -= 12;
-                  $hour < 10 ?? "0$hour" !! "$hour"
-              }
-              else {
-                  $hour
-              }
-          }
+    # Subset of strftime formatting
+    my sub expand-datetime(Str:D $format --> Str:D) {
+        my $now         := DateTime.now;
+        my str $yyyy-mm-dd = $now.yyyy-mm-dd;
+        my str $hh-mm-ss   = $now.hh-mm-ss;
+
+        # Convert hour to am/pm
+        sub ampm() {
+            $hh-mm-ss.substr(0,2) gt "11" ?? "pm" !! "am"
+        }
+
+        # Convert hour to 12 hour format, with given prefix if < 10
+        sub ampm-hour($prefix) {
+            my $hour = $hh-mm-ss.substr(0,2);
+            if $hour gt "12" {
+                $hour -= 12;
+                $hour < 10 ?? $prefix ~ $hour !! $hour
+            }
+            else {
+                $hour
+            }
+        }
+
+        $format.trans: <
+          %d %D %e %F %H %I %j %k %l %m %M %p %r %R %s %S %T %u %w %Y
+        > => (
+          { $yyyy-mm-dd.substr(5,2) },                       # %d
+          { $now.dd-mm-yyyy("/") },                          # %D
+          { blank($yyyy-mm-dd.substr(5,2)) },                # %e
+          $yyyy-mm-dd,                                       # %F
+          { $hh-mm-ss.substr(0,2) },                         # %H
+          { ampm-hour("0") },                                # %I
+          { $now.day-of-year.fmt('%03d') },                  # %j
+          { blank($hh-mm-ss.substr(0,2)) },                  # %k
+          { ampm-hour(" ") },                                # %l
+          { $yyyy-mm-dd.substr(3,2) },                       # %m
+          { $hh-mm-ss.substr(3,2) },                         # %M
+          { ampm },                                          # %p
+          { "&ampm-hour(" ")$hh-mm-ss.substr(2) &ampm()" },  # %r
+          { $hh-mm-ss.substr(0,5) },                         # %R
+          { $now.Instant.to-posix.head.Int },                # %s
+          { $hh-mm-ss.substr(6,2) },                         # %S
+          $hh-mm-ss,                                         # %T
+          { $now.day-of-week },                              # %u
+          { $now.day-of-week - 1 },                          # %w
+          { $yyyy-mm-dd.substr(0,4) },                       # %Y
         )
     }
 
-    my sub expand-prompt(Str:D $prompt --> Str:D) {
+    method expand(Prompt: Str:D $prompt --> Str:D) {
 
         # Constants for readability and constantness
         my constant bell    = chr(7);
         my constant escape  = chr(27);
         my constant newline = "\n";
+        my constant tab     = "\t";
         my constant prefix  = escape ~ '[';
         my constant reset   = prefix ~ "0m";
 
         $prompt.trans: (
           '\i',                        # index
           '\a',                        # bell
+          '\t',                        # tab
           '\n',                        # newline
           '\e',                        # escape
           '\c',                        # reset
-          '\t',                        # hh:mm:ss
+          '\d',                        # hh:mm:ss
           '\v',                        # compiler version
           '\V',                        # compiler version (verbose)
           '\l',                        # language version
           '\L',                        # language version (verbose)
           rx/ '\c' '{' <-[}]>* '}' /,  # colors
-          rx/ '\t' '{' <-[}]>* '}' /,  # time
+          rx/ '\d' '{' <-[}]>* '}' /,  # time
         ) => (
           $*INDEX // 0,
           bell,
+          tab,
           newline,
           escape,
           reset,
           DateTime.now.hh-mm-ss,
-          $*RAKU.compiler.version.Str,
+          $*RAKU.compiler.version.Str.substr(0,7),
           $*RAKU.compiler.version.gist,
           $*RAKU.version.Str,
           $*RAKU.version.gist,
-          { expand-color $/.substr(3, *-1) },
-          { expand-time  $/.substr(3, *-1) },
+          { expand-color    $/.substr(3, *-1) },
+          { expand-datetime $/.substr(3, *-1) },
         )
     }
 
@@ -361,9 +397,7 @@ role Prompt {
 
     # Read a line with history saving logic
     method readline($prompt?){
-        with self.read(
-          $prompt ?? expand-prompt($prompt) !! '> '
-        ) -> $line {
+        with self.read($prompt // '> ') -> $line {
             if $line && $line ne $!last-line {
                 self.add-history($line);
                 $!last-line = $line;

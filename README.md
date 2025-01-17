@@ -41,17 +41,17 @@ The `Prompt` role embodies the information needed to read a line of input from a
 ### method new
 
 ```raku
-my $prompt = Prompt.new(
+my $Prompt = Prompt.new(
   :editor(Any),    # or "Readline", "LineEditor", "Linenoise"
   :history<here>,                       # default: none
   :completions(@completions),           # default: none
   :additional-completions(&one, &two),  # default: none
 );
 loop {
-    last without my $line = $prompt.readline;
+    last without my $line = $Prompt.readline;
     say $line;
 }
-$prompt.save-history;
+$Prompt.save-history;
 ```
 
 The `new` method is called to instantiate a `Prompt` object. It takes a number of named arguments described below.
@@ -87,10 +87,12 @@ A `List` of `Callables` to be called to support additional completion logic. Wil
 ### method readline
 
 ```raku
-my $line = $prompt.readline("> ");
+my $line = $Prompt.readline("> ");
 ```
 
 The `readline` method takes a single positional argument for the prompt to be shown (defaults to "> ") and returns a line of input from the user.
+
+The prompt will be scanned for escape sequence [interpolation](#INTERPOLATIONS).
 
 An undefined value is returned if the user has indicated there is no more input to be obtained.
 
@@ -101,17 +103,17 @@ Note that to persistently store the history, one **must** call the `save-history
 ### method read
 
 ```raku
-my $line = $prompt.read("> ");
+my $line = $Prompt.read("> ");
 ```
 
-The `read` method takes a single positional argument for the prompt to be shown and returns a line of input from the user. It does **not** handle anything history related.
+The `read` method takes a single positional argument for the prompt to be shown and returns a line of input from the user. It does **not** handle anything history related, nor does it do any escape code analysis.
 
 ### method completions
 
 ```raku
-.say for $prompt.completions;
+.say for $Prompt.completions;
 
-$prompt.completions(<a b c>);
+$Prompt.completions(<a b c>);
 ```
 
 The `completions` method returns the current sorted `List` of completions.
@@ -125,7 +127,7 @@ The `additional-completions` method returns an `Array` of `Callable`s that will 
 ### method editor-name
 
 ```raku
-say $prompt.editor-name;
+say $Prompt.editor-name;
 ```
 
 The `editor-name` method returns the name of the editor support that was activated. It is intended to be purely informatonal.
@@ -133,10 +135,10 @@ The `editor-name` method returns the name of the editor support that was activat
 ### method history
 
 ```raku
-my $history = $prompt.history;
+my $history = $Prompt.history;
 
-$prompt.save-history;
-$prompt.history("another-file");
+$Prompt.save-history;
+$Prompt.history("another-file");
 ```
 
 Returns the `IO::Path` object representing the persistent history file.
@@ -146,7 +148,7 @@ Can also be called with a positional argument, indicating the file to be used fo
 ### method add-history
 
 ```raku
-$prompt.add-history($line);
+$Prompt.add-history($line);
 ```
 
 The `add-history` method can be called to add a line to the current history. It takes a single positional argument: the line to be added.
@@ -160,6 +162,53 @@ Will (re-)load the history from the file indicated with `history`.
 ### method save-history
 
 Will save the current history to the file indicated with `history`.
+
+### method expand
+
+```raku
+my $prompt = Prompt.expand('\c{yellow;bold}\d{%r}\c > ');
+Prompt.new.readline($prompt);
+```
+
+The `expand` method will scan the given string for a number of escape escape sequences and interpolate the values associated with the given escape sequence if found.
+
+<table class="pod-table">
+<thead><tr>
+<th>Sequence</th> <th>Prompt Expansion</th>
+</tr></thead>
+<tbody>
+<tr> <td>\a</td> <td>alert / bell character</td> </tr> <tr> <td>\t</td> <td>tab</td> </tr> <tr> <td>\n</td> <td>newline</td> </tr> <tr> <td>\c</td> <td>color / formatting - see below for options</td> </tr> <tr> <td>\d</td> <td>time - see below for options</td> </tr> <tr> <td>\e</td> <td>escape character</td> </tr> <tr> <td>\i</td> <td>the value of $*INDEX</td> </tr> <tr> <td>\l</td> <td>language version</td> </tr> <tr> <td>\L</td> <td>language version (verbose)</td> </tr> <tr> <td>\v</td> <td>compiler version</td> </tr> <tr> <td>\V</td> <td>compiler version (verbose)</td> </tr>
+</tbody>
+</table>
+
+#### color / formatting sequences (\c)
+
+Provide some common ANSI codes with short names. Defaults to `reset` if a bare `\c` is used, and multiple arguments can be separated with a `;`, e.g. `\c{yellow;bold}`.
+
+##### formatting
+
+These identifiers can be used for general formatting: `reset`, `normal`, `bold`, `dim`, `italic`, `underline`, `blink`, `inverse`, `hidden`, `strikethrough`.
+
+##### foreground colors
+
+These identifiers can be used for foreground colors: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`, `default`.
+
+##### background colors
+
+These identifiers can be used for background colors: `bg:black`, `bg:red`, `bg:green`, `bg:yellow`, `bg:blue`, `bg:magenta`, `bg:cyan`, `bg:white`, `bg:default`.
+
+#### time sequences (\d)
+
+The `\d` construct takes an optional `{ }` containing a subset of `strftime` codes, defaulting to `%T` if a bare `\d` is used.
+
+<table class="pod-table">
+<thead><tr>
+<th>Code</th> <th>Value</th>
+</tr></thead>
+<tbody>
+<tr> <td>%d</td> <td>day of month (&quot;01&quot; .. &quot;31&quot;)</td> </tr> <tr> <td>%D</td> <td>%m/%d/%y</td> </tr> <tr> <td>%e</td> <td>day of month (&quot; 1&quot; .. &quot;31&quot;)</td> </tr> <tr> <td>%F</td> <td>%Y-%m-%d</td> </tr> <tr> <td>%H</td> <td>24-hour hour (&quot;00&quot; .. &quot;23&quot;)</td> </tr> <tr> <td>%I</td> <td>12-hour hour (&quot;01&quot; .. &quot;12&quot;)</td> </tr> <tr> <td>%j</td> <td>day of the year (&quot;001&quot; .. &quot;366&quot;)</td> </tr> <tr> <td>%k</td> <td>24-hour hour (&quot; 1&quot; .. &quot;23&quot;)</td> </tr> <tr> <td>%l</td> <td>12-hour hour (&quot; 1&quot; .. &quot;12&quot;)</td> </tr> <tr> <td>%M</td> <td>minute (&quot;00&quot; .. &quot;59&quot;)</td> </tr> <tr> <td>%m</td> <td>month (&quot;01&quot; .. &quot;12&quot;)</td> </tr> <tr> <td>%p</td> <td>&quot;am&quot; | &quot;pm&quot;</td> </tr> <tr> <td>%R</td> <td>%H:%M</td> </tr> <tr> <td>%r</td> <td>%I:%M:%S %p</td> </tr> <tr> <td>%S</td> <td>second (&quot;00&quot; .. &quot;59&quot;)</td> </tr> <tr> <td>%T</td> <td>%H:%M:%S</td> </tr> <tr> <td>%u</td> <td>weekday (1 .. 7)</td> </tr> <tr> <td>%w</td> <td>weekday (0 .. 6)</td> </tr> <tr> <td>%Y</td> <td>year (yyyy)</td> </tr>
+</tbody>
+</table>
 
 EDITOR ROLES
 ============
@@ -258,7 +307,7 @@ If you like this module, or what I'm doing more generally, committing to a [smal
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright 2024 Elizabeth Mattijsen
+Copyright 2024, 2025 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 

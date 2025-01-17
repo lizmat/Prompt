@@ -46,17 +46,17 @@ were entered.
 
 =begin code :lang<raku>
 
-my $prompt = Prompt.new(
+my $Prompt = Prompt.new(
   :editor(Any),    # or "Readline", "LineEditor", "Linenoise"
   :history<here>,                       # default: none
   :completions(@completions),           # default: none
   :additional-completions(&one, &two),  # default: none
 );
 loop {
-    last without my $line = $prompt.readline;
+    last without my $line = $Prompt.readline;
     say $line;
 }
-$prompt.save-history;
+$Prompt.save-history;
 
 =end code
 
@@ -111,12 +111,15 @@ returns C<True>.
 
 =begin code :lang<raku>
 
-my $line = $prompt.readline("> ");
+my $line = $Prompt.readline("> ");
 
 =end code
 
 The C<readline> method takes a single positional argument for the prompt
 to be shown (defaults to "> ") and returns a line of input from the user.
+
+The prompt will be scanned for escape sequence
+L<interpolation|#INTERPOLATIONS>.
 
 An undefined value is returned if the user has indicated there is no more
 input to be obtained.
@@ -134,21 +137,21 @@ C<save-history>, when appropriate (usually when the user is done).
 
 =begin code :lang<raku>
 
-my $line = $prompt.read("> ");
+my $line = $Prompt.read("> ");
 
 =end code
 
 The C<read> method takes a single positional argument for the prompt
 to be shown and returns a line of input from the user.  It does B<not>
-handle anything history related.
+handle anything history related, nor does it do any escape code analysis.
 
 =head3 method completions
 
 =begin code :lang<raku>
 
-.say for $prompt.completions;
+.say for $Prompt.completions;
 
-$prompt.completions(<a b c>);
+$Prompt.completions(<a b c>);
 
 =end code
 
@@ -169,7 +172,7 @@ of the cursor when a completion was requested.
 
 =begin code :lang<raku>
 
-say $prompt.editor-name;
+say $Prompt.editor-name;
 
 =end code
 
@@ -180,10 +183,10 @@ activated.  It is intended to be purely informatonal.
 
 =begin code :lang<raku>
 
-my $history = $prompt.history;
+my $history = $Prompt.history;
 
-$prompt.save-history;
-$prompt.history("another-file");
+$Prompt.save-history;
+$Prompt.history("another-file");
 
 =end code
 
@@ -198,7 +201,7 @@ unless a call to C<save-history> was done before that.
 
 =begin code :lang<raku>
 
-$prompt.add-history($line);
+$Prompt.add-history($line);
 
 =end code
 
@@ -215,6 +218,91 @@ Will (re-)load the history from the file indicated with C<history>.
 =head3 method save-history
 
 Will save the current history to the file indicated with C<history>.
+
+=head3 method expand
+
+=begin code :lang<raku>
+
+my $prompt = Prompt.expand('\c{yellow;bold}\d{%r}\c > ');
+Prompt.new.readline($prompt);
+
+=end code
+
+The C<expand> method will scan the given string for a number of escape
+escape sequences and interpolate the values associated with the given
+escape sequence if found.
+
+=begin table
+
+| Sequence | Prompt Expansion
+|----------|-----------------
+| \a       | alert / bell character
+| \t       | tab
+| \n       | newline
+| \c       | color / formatting - see below for options
+| \d       | time - see below for options
+| \e       | escape character
+| \i       | the value of $*INDEX
+| \l       | language version
+| \L       | language version (verbose)
+| \v       | compiler version
+| \V       | compiler version (verbose)
+
+=end table
+
+=head4 color / formatting sequences (\c)
+
+Provide some common ANSI codes with short names. Defaults to C<reset> if
+a bare C<\c> is used, and multiple arguments can be separated with a C<;>,
+e.g. C<\c{yellow;bold}>.
+
+=head5 formatting
+
+These identifiers can be used for general formatting: C<reset>, C<normal>,
+C<bold>, C<dim>, C<italic>, C<underline>, C<blink>, C<inverse>, C<hidden>,
+C<strikethrough>.
+
+=head5 foreground colors
+
+These identifiers can be used for foreground colors: C<black>, C<red>,
+C<green>, C<yellow>, C<blue>, C<magenta>, C<cyan>, C<white>, C<default>.
+
+=head5 background colors
+
+These identifiers can be used for background colors: C<bg:black>,
+C<bg:red>, C<bg:green>, C<bg:yellow>, C<bg:blue>, C<bg:magenta>,
+C<bg:cyan>, C<bg:white>, C<bg:default>.
+
+=head4 time sequences (\d)
+
+The C<\d> construct takes an optional C<{ }> containing a subset of
+C<strftime> codes, defaulting to C<%T> if a bare C<\d> is used.
+
+=begin table
+
+| Code | Value
+|------|------
+| %d   | day of month ("01" .. "31")
+| %D   | %m/%d/%y
+| %e   | day of month (" 1" .. "31")
+| %F   | %Y-%m-%d
+| %H   | 24-hour hour ("00" .. "23")
+| %I   | 12-hour hour ("01" .. "12")
+| %j   | day of the year ("001" .. "366")
+| %k   | 24-hour hour (" 1" .. "23")
+| %l   | 12-hour hour (" 1" .. "12")
+| %M   | minute ("00" .. "59")
+| %m   | month ("01" .. "12")
+| %p   | "am" \| "pm"
+| %R   | %H:%M
+| %r   | %I:%M:%S %p
+| %S   | second ("00" .. "59")
+| %T   | %H:%M:%S
+| %u   | weekday (1 .. 7)
+| %w   | weekday (0 .. 6)
+| %Y   | year (yyyy)
+
+=end table
 
 =head1 EDITOR ROLES
 
@@ -338,7 +426,7 @@ deal to me!
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2024 Elizabeth Mattijsen
+Copyright 2024, 2025 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 
