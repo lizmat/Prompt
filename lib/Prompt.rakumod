@@ -254,20 +254,18 @@ role Prompt {
     }
 
     # Subset of strftime formatting
-    my sub expand-datetime(Str:D $format, DateTime:D $dt --> Str:D) {
-        my $now           := $dt // DateTime.new;
-        my str $yyyy-mm-dd = $now.yyyy-mm-dd;
-        my str $hh-mm-ss   = $now.hh-mm-ss;
+    my sub expand-datetime(Str:D $format, $dt --> Str:D) {
+        my $now := $dt // DateTime.now;
 
         # Convert hour to am/pm
         sub ampm() {
-            $hh-mm-ss.substr(0,2) gt "11" ?? "pm" !! "am"
+            $now.hour > 11 ?? "pm" !! "am"
         }
 
         # Convert hour to 12 hour format, with given prefix if < 10
         sub ampm-hour($prefix) {
-            my $hour = $hh-mm-ss.substr(0,2);
-            if $hour gt "12" {
+            my $hour = $now.hour;
+            if $hour > 12 {
                 $hour -= 12;
                 $hour < 10 ?? $prefix ~ $hour !! $hour
             }
@@ -279,26 +277,26 @@ role Prompt {
         $format.trans: <
           %d %D %e %F %H %I %j %k %l %m %M %p %r %R %s %S %T %u %w %Y
         > => (
-          { $yyyy-mm-dd.substr(5,2) },                       # %d
-          { $now.dd-mm-yyyy("/") },                          # %D
-          { blank($yyyy-mm-dd.substr(5,2)) },                # %e
-          $yyyy-mm-dd,                                       # %F
-          { $hh-mm-ss.substr(0,2) },                         # %H
-          { ampm-hour("0") },                                # %I
-          { $now.day-of-year.fmt('%03d') },                  # %j
-          { blank($hh-mm-ss.substr(0,2)) },                  # %k
-          { ampm-hour(" ") },                                # %l
-          { $yyyy-mm-dd.substr(3,2) },                       # %m
-          { $hh-mm-ss.substr(3,2) },                         # %M
-          { ampm },                                          # %p
-          { "&ampm-hour(" ")$hh-mm-ss.substr(2) &ampm()" },  # %r
-          { $hh-mm-ss.substr(0,5) },                         # %R
-          { $now.Instant.to-posix.head.Int },                # %s
-          { $hh-mm-ss.substr(6,2) },                         # %S
-          $hh-mm-ss,                                         # %T
-          { $now.day-of-week },                              # %u
-          { $now.day-of-week - 1 },                          # %w
-          { $yyyy-mm-dd.substr(0,4) },                       # %Y
+          { $now.yyyy-mm-dd.substr(5,2) },                       # %d
+          { $now.dd-mm-yyyy("/") },                              # %D
+          { blank($now.yyyy-mm-dd.substr(5,2)) },                # %e
+          { $now.yyyy-mm-dd },                                   # %F
+          { $now.hh-mm-ss.substr(0,2) },                         # %H
+          { ampm-hour("0") },                                    # %I
+          { $now.day-of-year.fmt('%03d') },                      # %j
+          { blank($now.hh-mm-ss.substr(0,2)) },                  # %k
+          { ampm-hour(" ") },                                    # %l
+          { $now.yyyy-mm-dd.substr(3,2) },                       # %m
+          { $now.hh-mm-ss.substr(3,2) },                         # %M
+          { ampm },                                              # %p
+          { "&ampm-hour(" ")$now.hh-mm-ss.substr(2) &ampm()" },  # %r
+          { $now.hh-mm-ss.substr(0,5) },                         # %R
+          { $now.Instant.to-posix.head.Int },                    # %s
+          { $now.hh-mm-ss.substr(6,2) },                         # %S
+          { $now.hh-mm-ss },                                     # %T
+          { $now.day-of-week },                                  # %u
+          { $now.day-of-week - 1 },                              # %w
+          { $now.yyyy-mm-dd.substr(0,4) },                       # %Y
         )
     }
 
@@ -325,7 +323,7 @@ role Prompt {
           '\e',                        # escape
           '\c',                        # reset
           '\d',                        # hh:mm:ss
-          '\v',                        # compiler version
+          '\v',                        # compiler release version
           '\V',                        # compiler version (verbose)
           '\l',                        # language version
           '\L',                        # language version (verbose)

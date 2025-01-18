@@ -267,9 +267,10 @@ The following interpolation sequences are recognized.
 | \i       | the value of :$index, or 0
 | \l       | language version
 | \L       | language version (verbose)
-| \v       | compiler version
+| \v       | compiler release version
 | \V       | compiler version (verbose)
 | \P       | the value of :$symbol, or '>'
+|----------|-----------------
 
 =end table
 
@@ -306,9 +307,9 @@ C<strftime> codes, defaulting to C<%T> if a bare C<\d> is used.
 | Code | Value
 |------|------
 | %d   | day of month ("01" .. "31")
-| %D   | %m/%d/%y
+| %D   | short for: %m/%d/%y
 | %e   | day of month (" 1" .. "31")
-| %F   | %Y-%m-%d
+| %F   | short for: %Y-%m-%d
 | %H   | 24-hour hour ("00" .. "23")
 | %I   | 12-hour hour ("01" .. "12")
 | %j   | day of the year ("001" .. "366")
@@ -317,13 +318,14 @@ C<strftime> codes, defaulting to C<%T> if a bare C<\d> is used.
 | %M   | minute ("00" .. "59")
 | %m   | month ("01" .. "12")
 | %p   | "am" \| "pm"
-| %R   | %H:%M
-| %r   | %I:%M:%S %p
+| %R   | short for: %H:%M
+| %r   | short for: %I:%M:%S %p
 | %S   | second ("00" .. "59")
-| %T   | %H:%M:%S
+| %T   | short for: %H:%M:%S
 | %u   | weekday (1 .. 7)
 | %w   | weekday (0 .. 6)
 | %Y   | year (yyyy)
+|------|------
 
 =end table
 
