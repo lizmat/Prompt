@@ -163,69 +163,6 @@ Will (re-)load the history from the file indicated with `history`.
 
 Will save the current history to the file indicated with `history`.
 
-### method expand
-
-```raku
-my $prompt = Prompt.expand('\c{yellow;bold}\d{%r}\c \P ');
-Prompt.new.readline($prompt);
-```
-
-The `expand` method will scan the given string for a number of escape escape sequences and interpolate the values associated with the given escape sequence if found.
-
-#### :index
-
-The `index` named argument can be specified to indicate to what value the `\i` sequence should interpolate. It will assume `0` if not specified.
-
-#### :symbol
-
-The `symbol` named argument can be specified to indicate to what prompt symbol the `\P` sequence should interpolate. It will assume `">"` if not specified.
-
-#### :now
-
-The `now` named argument can be specified to indicate with what `DateTime` object the `\d` format sequences should interpolate with. It will assume `DateTime.now` if not specified.
-
-#### interpolation sequences
-
-The following interpolation sequences are recognized.
-
-<table class="pod-table">
-<thead><tr>
-<th>Sequence</th> <th>Prompt Expansion</th>
-</tr></thead>
-<tbody>
-<tr> <td>\a</td> <td>alert / bell character</td> </tr> <tr> <td>\t</td> <td>tab</td> </tr> <tr> <td>\n</td> <td>newline</td> </tr> <tr> <td>\c</td> <td>color / formatting - see below for options</td> </tr> <tr> <td>\d</td> <td>time - see below for options</td> </tr> <tr> <td>\e</td> <td>escape character</td> </tr> <tr> <td>\i</td> <td>the value of :$index, or 0</td> </tr> <tr> <td>\l</td> <td>language version</td> </tr> <tr> <td>\L</td> <td>language version (verbose)</td> </tr> <tr> <td>\v</td> <td>compiler version</td> </tr> <tr> <td>\V</td> <td>compiler version (verbose)</td> </tr> <tr> <td>\P</td> <td>the value of :$symbol, or &#39;&gt;&#39;</td> </tr>
-</tbody>
-</table>
-
-#### color / formatting sequences (\c)
-
-Provide some common ANSI codes with short names. Defaults to `reset` if a bare `\c` is used, and multiple arguments can be separated with a `;`, e.g. `\c{yellow;bold}`.
-
-##### formatting
-
-These identifiers can be used for general formatting: `reset`, `normal`, `bold`, `dim`, `italic`, `underline`, `blink`, `inverse`, `hidden`, `strikethrough`.
-
-##### foreground colors
-
-These identifiers can be used for foreground colors: `black`, `red`, `green`, `yellow`, `blue`, `magenta`, `cyan`, `white`, `default`.
-
-##### background colors
-
-These identifiers can be used for background colors: `bg:black`, `bg:red`, `bg:green`, `bg:yellow`, `bg:blue`, `bg:magenta`, `bg:cyan`, `bg:white`, `bg:default`.
-
-#### time sequences (\d)
-
-The `\d` construct takes an optional `{ }` containing a subset of `strftime` codes, defaulting to `%T` if a bare `\d` is used.
-
-<table class="pod-table">
-<thead><tr>
-<th>Code</th> <th>Value</th>
-</tr></thead>
-<tbody>
-<tr> <td>%d</td> <td>day of month (&quot;01&quot; .. &quot;31&quot;)</td> </tr> <tr> <td>%D</td> <td>%m/%d/%y</td> </tr> <tr> <td>%e</td> <td>day of month (&quot; 1&quot; .. &quot;31&quot;)</td> </tr> <tr> <td>%F</td> <td>%Y-%m-%d</td> </tr> <tr> <td>%H</td> <td>24-hour hour (&quot;00&quot; .. &quot;23&quot;)</td> </tr> <tr> <td>%I</td> <td>12-hour hour (&quot;01&quot; .. &quot;12&quot;)</td> </tr> <tr> <td>%j</td> <td>day of the year (&quot;001&quot; .. &quot;366&quot;)</td> </tr> <tr> <td>%k</td> <td>24-hour hour (&quot; 1&quot; .. &quot;23&quot;)</td> </tr> <tr> <td>%l</td> <td>12-hour hour (&quot; 1&quot; .. &quot;12&quot;)</td> </tr> <tr> <td>%M</td> <td>minute (&quot;00&quot; .. &quot;59&quot;)</td> </tr> <tr> <td>%m</td> <td>month (&quot;01&quot; .. &quot;12&quot;)</td> </tr> <tr> <td>%p</td> <td>&quot;am&quot; | &quot;pm&quot;</td> </tr> <tr> <td>%R</td> <td>%H:%M</td> </tr> <tr> <td>%r</td> <td>%I:%M:%S %p</td> </tr> <tr> <td>%S</td> <td>second (&quot;00&quot; .. &quot;59&quot;)</td> </tr> <tr> <td>%T</td> <td>%H:%M:%S</td> </tr> <tr> <td>%u</td> <td>weekday (1 .. 7)</td> </tr> <tr> <td>%w</td> <td>weekday (0 .. 6)</td> </tr> <tr> <td>%Y</td> <td>year (yyyy)</td> </tr>
-</tbody>
-</table>
-
 EDITOR ROLES
 ============
 

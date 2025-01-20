@@ -2,6 +2,12 @@ Revision history for Prompt
 
 {{$NEXT}}
 
+0.0.9  2025-01-20T14:23:54+01:00
+    - Remove method "expand": it was too limited in its
+      functionality and really didn't belong in this module.
+      Improved prompt expansion capabilities are now provided
+      by the Promp::Expand distribution
+
 0.0.8  2025-01-17T19:31:09+01:00
     - Add method "expand" which performs various types of
       escape sequence expansions, intended to make the prompt
