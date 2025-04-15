@@ -2,6 +2,9 @@ Revision history for Prompt
 
 {{$NEXT}}
 
+0.0.10  2025-04-15T15:31:30+02:00
+    - Prevent Nil from leaking into completions, timo++
+
 0.0.9  2025-01-20T14:23:54+01:00
     - Remove method "expand": it was too limited in its
       functionality and really didn't belong in this module.

@@ -51,7 +51,7 @@ role Prompt::Fallback {
             }).iterator.push-all($completions);
 
             for @!additional-completions -> &completions {
-                 .iterator.push-all($completions) with completions($line, $pos);
+                .iterator.push-all($completions) with completions($line, $pos);
             }
         }
 
