@@ -9,9 +9,11 @@ SYNOPSIS
 ========
 
 ```raku
+# Best with any of Terminal::LineEditor, Linenoise or
+# Readline distributions installed
 use Prompt;
 
-my $prompt = Prompt.new(:history<here>);
+my $prompt = Prompt.new(:history<here>);  # auto-select editor
 loop {
     last without my $line = $prompt.readline("> ");
     say $line;
@@ -31,7 +33,9 @@ ROLES
 
 The `Prompt` role is what usually gets punned into a class.
 
-The `Prompt::Fallback` role provides all of the logic if no specific editor has been found. It also serves as a base role for specific editor roles, such as `Prompt::Readline`, `Prompt::LineEditor` and `Prompt::Linenoise`.
+The `Prompt::Fallback` role serves as a base role for specific editor roles, such as `Prompt::Readline`, `Prompt::LineEditor` and `Prompt::Linenoise`, each of which have their pros and cons.
+
+The `Prompt::Fallback` role provides all of the logic if no specific editor has been found, but is not recommended for production use.
 
 Prompt
 ------
