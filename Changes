@@ -1,6 +1,10 @@
 Revision history for Prompt
 
 {{$NEXT}}
+    - Workaround a serialization issue with RakuAST
+    - Update dependencies
+    - Modernize META
+    - Update copyright year
 
 0.0.10  2025-04-15T15:31:30+02:00
     - Prevent Nil from leaking into completions, timo++

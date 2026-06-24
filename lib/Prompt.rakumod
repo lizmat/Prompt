@@ -1,6 +1,8 @@
 # Hopefully will become core at some point
 use nqp;
 
+my &core-prompt = &CORE::prompt;
+
 # Need to stub first to allow all to see each oher
 role Prompt { ... }
 
@@ -12,7 +14,7 @@ role Prompt::Fallback {
     has @.additional-completions;
 
     # Basic input reader
-    method read($prompt) { &CORE::prompt($prompt) }
+    method read($prompt) { core-prompt($prompt) }
 
     # Do not support completions by default
     method supports-completions(--> False) { }

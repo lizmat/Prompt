@@ -7,7 +7,6 @@ Prompt - a smarter prompt for user interaction
 =head1 SYNOPSIS
 
 =begin code :lang<raku>
-
 # Best with any of Terminal::LineEditor, Linenoise or
 # Readline distributions installed
 use Prompt;
@@ -18,7 +17,6 @@ loop {
     say $line;
 }
 $prompt.save-history;
-
 =end code
 
 =head1 DESCRIPTION
@@ -49,7 +47,6 @@ were entered.
 =head3 method new
 
 =begin code :lang<raku>
-
 my $Prompt = Prompt.new(
   :editor(Any),    # or "Readline", "LineEditor", "Linenoise"
   :history<here>,                       # default: none
@@ -61,7 +58,6 @@ loop {
     say $line;
 }
 $Prompt.save-history;
-
 =end code
 
 The C<new> method is called to instantiate a C<Prompt> object.  It
@@ -114,9 +110,7 @@ returns C<True>.
 =head3 method readline
 
 =begin code :lang<raku>
-
 my $line = $Prompt.readline("> ");
-
 =end code
 
 The C<readline> method takes a single positional argument for the prompt
@@ -140,9 +134,7 @@ C<save-history>, when appropriate (usually when the user is done).
 =head3 method read
 
 =begin code :lang<raku>
-
 my $line = $Prompt.read("> ");
-
 =end code
 
 The C<read> method takes a single positional argument for the prompt
@@ -152,11 +144,9 @@ handle anything history related, nor does it do any escape code analysis.
 =head3 method completions
 
 =begin code :lang<raku>
-
 .say for $Prompt.completions;
 
 $Prompt.completions(<a b c>);
-
 =end code
 
 The C<completions> method returns the current sorted C<List> of completions.
@@ -175,9 +165,7 @@ of the cursor when a completion was requested.
 =head3 method editor-name
 
 =begin code :lang<raku>
-
 say $Prompt.editor-name;
-
 =end code
 
 The C<editor-name> method returns the name of the editor support that was
@@ -186,12 +174,10 @@ activated.  It is intended to be purely informatonal.
 =head3 method history
 
 =begin code :lang<raku>
-
 my $history = $Prompt.history;
 
 $Prompt.save-history;
 $Prompt.history("another-file");
-
 =end code
 
 Returns the C<IO::Path> object representing the persistent history file.
@@ -204,9 +190,7 @@ unless a call to C<save-history> was done before that.
 =head3 method add-history
 
 =begin code :lang<raku>
-
 $Prompt.add-history($line);
-
 =end code
 
 The C<add-history> method can be called to add a line to the current
@@ -300,11 +284,9 @@ module.
 =head2 sub prompt
 
 =begin code :lang<raku>
-
 use Prompt :prompt;
 
 say prompt("> ");
-
 =end code
 
 If the C<:prompt> named argument is specified with the C<use Prompt>
@@ -320,12 +302,10 @@ C<PROCESS::> stash (making it automatically available for any
 subsequent call to the exported C<prompt> subroutine).
 
 =begin code :lang<raku>
-
 use Prompt :prompt;
 
 my $*PROMPT = Prompt.new(...);
 say prompt("> ");
-
 =end code
 
 If one needs specific initializations with the C<Prompt> object, one
@@ -336,7 +316,7 @@ C<prompt>.
 
 Elizabeth Mattijsen <liz@raku.rocks>
 
-Source can be located at: https://github.com/lizmat/Prompt . Comments and
+Source can be located at: https://codeberg.org/lizmat/Prompt . Comments and
 Pull Requests are welcome.
 
 If you like this module, or what I'm doing more generally, committing to a
@@ -345,7 +325,7 @@ deal to me!
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2024, 2025 Elizabeth Mattijsen
+Copyright 2024, 2025, 2026 Elizabeth Mattijsen
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 

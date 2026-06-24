@@ -10,13 +10,18 @@
   "description": "A smarter prompt for user interaction",
   "license": "Artistic-2.0",
   "name": "Prompt",
-  "perl": "6.d",
   "provides": {
     "Prompt": "lib/Prompt.rakumod"
   },
+  "raku": "6.d",
   "resources": [
   ],
-  "source-url": "https://github.com/lizmat/Prompt.git",
+  "source-url": "https://codeberg.org/lizmat/Prompt.git",
+  "support": {
+    "bugtracker": "https://codeberg.org/lizmat/Prompt/issues",
+    "email": "liz@raku.rocks",
+    "source": "https://codeberg.org/lizmat/Prompt.git"
+  },
   "tags": [
     "PROMPT",
     "INTERACTIVE",
