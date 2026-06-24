@@ -1,6 +1,8 @@
 Revision history for Prompt
 
 {{$NEXT}}
+
+0.0.11  2026-06-24T19:25:38+02:00
     - Workaround a serialization issue with RakuAST
     - Update dependencies
     - Modernize META
